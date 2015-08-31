@@ -1,0 +1,71 @@
+\section{Experiments}
+\label{sec:Experiments}
+
+To demonstrate the usability and overhead of the River state management mechanism we have performed some simple experiments.  First we look at the overhead involved in running serial code within River using Stackless Python.  Second, we look at the cost of serial and distributed checkpointing.  All of the experiments were performed on computers with dual dual-core (4 core) AMD Opteron 270 processors at 2.0GHz and 4 GB of RAM.  We used a Gigabit Ethernet network for the distributed experiments.  The operating system is Linux Fedora Core 5 and we used Python 2.5.1 and Stackless Python 2.5.1.  The machines were used exclusively for these benchmarks.
+
+\subsection{Run-time Overhead}
+
+To quantify the run-time overhead of executing Python code within River with state management support we ran experiments with two programs: the pystone.py (pystone) benchmark from the standard Python distribution and a parallel conjugate gradient solver (congrad) written entirely in Python.  For the Pystone benchmark we ran it for $10^6$ iterations and for the conjugate gradient solver we used an input matrix of size 256 by 265 doubles with 1 processor.
+
+\begin{table} [htb]
+\begin{center}
+\begin{tabular}{|l|r|r|}  \hline
+Version                  &  pystone  &  congrad  \\ \hline\hline
+Python                   &    19.14s &    9.56s  \\ \hline
+River + Python           &    20.82s &   10.25s  \\ \hline
+Stackless Python         &    18.69s &   10.38s  \\ \hline
+River + Stackless Python &    21.07s &   10.73s  \\ \hline
+\end{tabular}
+\end{center}
+\caption{River Run-time Performance}
+\label{tab:overhead}
+\end{table}
+
+Table~\ref{tab:overhead} presents the results of the run-time overhead
+experiments.  It is interesting to note that standard Python does worse
+than Stackless Python on the pystone benchmark, but does better on the
+conjugate gradient solver.  Running the serial code in River + Stackless
+adds 13\% overhead to pystone when compared to Stackless alone and 3\%
+overhead to congrad for the same comparison.  The River overhead comes from
+two sources: additional threads required by the River VM that run
+periodically and the tasklet preemption, which currently occurs every 1000
+bytecode instructions.  These early results suggest the overhead will not
+be prohibitive.
+
+\subsection{Checkpointing Performance}
+
+We have evaluated River checkpointing for serial and distributed operation.  For serial checkpointing we ran the congrad benchmark on a single machine and took checkpoints at different frequencies during execution.  Using the 256 by 256 input matrix the resulting checkpoint file size is 2.7 Mbytes.  Table~\ref{tab:checkpointoverhead} shows the increase in execution time as we increase the number of checkpoints during a run.  For example, 4 checkpoints resulted in 13\% overhead.  With a more practical application, the run times and snapshot sizes would be much larger.  However, the checkpoint frequency for scientific applications would be much lower.  The results here demonstrate that checkpointing for a small Python application using River results in reasonable overhead.
+
+\begin{table} [htb]
+\begin{center}
+\begin{tabular}{|l|r|r|r|r|}  \hline
+\# checkpoints &     0  &       1 &   2    & 4 \\ \hline\hline
+congrad        & 10.73s &  11.00s &  11.34s & 12.14s \\ \hline
+\end{tabular}
+\end{center}
+\caption{Serial Checkpoint Overhead}
+\label{tab:checkpointoverhead}
+\end{table}
+
+For distributed checkpointing we ran the parallel congrad benchmark on a
+larger input matrix (1024 by 1024 doubles) across 4 machines.  We started 4
+River VMs on each machine.  On another machine in the cluster, we ran an
+external asynchronous checkpointing tool similar to the one presented in
+Section~\ref{sec:ExternalInterface}.  The tool was configured to take
+regular distributed checkpoints at different frequencies.  The resulting
+checkpoint files are 26 Mbytes in size.  The checkpoint files where
+collected onto a single machine, thus the state needed to be transferred in a linear fashion from each remote VM to a central VM. 
+
+\begin{table} [htb]
+\begin{center}
+\begin{tabular}{|l|r|r|r|r|}  \hline
+\# checkpoints &      0  &       1 &   2    & 4 \\ \hline\hline
+congrad        & 202.46s &  212.08s &  219.94s & 236.27s \\ \hline
+\end{tabular}
+\end{center}
+\caption{Distributed Checkpoint Overhead}
+\label{tab:dcheckpointoverhead}
+\end{table}
+
+Table~\ref{tab:dcheckpointoverhead} show the increasing run time with more frequent checkpoints.  In the worst case with 4 checkpoints the overhead is 17\%.  Note that the checkpoint overhead is much higher than if we checkpointed to the local disk for each VM.
+

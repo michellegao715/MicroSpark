@@ -1,0 +1,14 @@
+\section{Conclusions and Future Work}
+\label{sec:Conclusions}
+
+This paper presents a general mechanism for state management of distributed Python programs.  Our mechanism can be used to implement a wide range of policies for fault tolerance.  While similar mechanisms exist for other languages, this is the first such mechanism for Python programs. 
+%Furthermore, the mechanism is quite flexible, so it can be extended or %customized for a particular programming model or application.  
+Because we implement checkpointing at the language level, there is no need for underlying operating system support and the mechanism can be used in heterogeneous environments.  We have demonstrated that full-program state capture can be accomplished with reasonable overhead.
+
+In the future we plan to experiment with River state management in the context of higher-level programming models and larger-scale applications.  Furthermore we want to explore supporting native I/O operations and synchronizing checkpoints with disk state.  We believe that the River state management mechanism can be used to rapidly prototype and experiment with different dependability strategies.
+
+\section*{Acknowledgements}
+
+Alex Fedosov developed much of the River core and many of the River
+extensions.  Brian Hardie and Tony Ngo worked on the first versions of
+the River state management mechanism.

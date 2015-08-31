@@ -1,0 +1,75 @@
+%
+% file: main.tex
+%   by: GDB
+% desc: Rstate Paper for DPDNS 2007
+%
+
+%\documentclass[times,twocolumn,10pt]{article}
+\documentclass[times,twocolumn]{article}
+\usepackage{latex8}
+\usepackage{pslatex}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{float}
+\usepackage{epsfig}
+
+\newcommand{\displaycodesize}{\footnotesize}
+
+% Some useful macros
+% Multiline comments
+\long\def\com#1{}
+
+\floatstyle{boxed}
+\newfloat{code}{thp}{lop}
+\floatname{code}{Code}
+
+\floatstyle{ruled}
+\newfloat{listing}{thp}{lop}
+\floatname{listing}{Listing}
+
+% Document configuration
+
+%\title{Checkpointing and Migration for Distributed Python Applications}
+\title{State Management for Distributed Python Applications}
+\author{Gregory D. Benson \\
+    Department of Computer Science\\
+    University of San Francisco\\
+    benson@cs.usfca.edu \\
+    \today \\
+}
+
+\com{
+\renewcommand{\subsection}{\@startsection
+  {section}%
+  {2}%
+  {0mm}%
+  {-\baselineskip}%
+  {0.5\baselineskip}%
+  {\normalfont\largesize\bold}}
+}%\com
+
+\begin{document}
+%\pagestyle{empty}
+
+\maketitle 
+\thispagestyle{empty}
+
+\input{abstract}
+\input{introduction}
+\input{background}
+\input{interface}
+\input{implementation}
+\input{experiments}
+\input{conclusions}
+
+%\pagebreak
+
+%\small
+\bibliographystyle{latex8}
+\bibliography{river,python,java,mpi,pl,os,networking,hpc,ft}
+
+\end{document}
+
+

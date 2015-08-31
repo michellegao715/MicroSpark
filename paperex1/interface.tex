@@ -1,0 +1,176 @@
+\section{Interfaces}
+\label{sec:Interface}
+
+The River state management mechanism can be used to capture the entire execution
+state of a running virtual resource (VR). This state includes all objects
+reachable by the containing VR object instance. It also includes all of the
+objects reachable from the run-time stack. Optionally, the state of the VR
+message queue can also be captured. Capturing the queue is most useful for
+consistent distributed state capture. From the programmer's perspective, the VR object
+instance serves as a container for all run-time state. The VR object is analogous
+to an OS process. The state management facility can be invoked {\it
+internally} by an application program in a synchronous fashion or {\it
+externally} by a separate utility in an asynchronous fashion.
+
+\subsection{Internal Interface}
+
+For internal usage, the VR interface provides a \verb+snapshot()+ method
+to capture program state at the request of the application. In its most
+basic form the \verb+target+ parameter specifies a filename to store the
+snapshot. In addition, the \verb+exit_vr+ boolean parameter specifies if
+the VR should exit or continue executing. Similarly, the \verb+exit_vm+
+boolean parameter specifies if the VM should exit or continue running.
+This interface allows applications to create checkpoints at regular
+intervals or at user prompted points. When a snapshot is restored,
+execution begins immediately after the invocation to the
+\verb+snapshot()+ method. Restoring the saved state of a single VR can
+be done on the command line by passing a \verb+--restore filename+ argument
+to \verb+river+, or it can be done externally using a state controller utility.
+
+%\begin{figure}[htb]
+\begin{listing}
+\scriptsize
+\begin{verbatim}
+
+
+from river.core.vr import VR
+
+class Hello(VR):
+  def main(self):
+    for i in range(10):
+      print i
+      if i == 4:
+        self.snapshot(target='state_ex.vrst',
+                     exit_vr=True, exit_vm=True)
+\end{verbatim}
+\normalsize
+\caption{Simple Usage of Internal State Management}
+\label{ex:internalstate}
+\end{listing}
+%\end{figure}
+
+Listing~\ref{ex:internalstate} shows how to use the \verb+snapshot()+
+interface to save the state of the current VR.  This example iterates though a list of integers, saving the state when \verb+i == 4+.  In this example, we exit both the VR and the VM.
+
+%\begin{figure}[htb]
+\begin{listing}
+\scriptsize
+\begin{verbatim}
+
+
+import cPickle as pickle
+from river.core.vr import VR
+
+def state_handler(vrstate):
+  vrfile = open('/net/state_ex_cust.vrst', 'w')
+  pickle.dump(vrstate, vrfile)
+  vrfile.close()
+
+class Hello(VR):
+  def main(self):
+    for i in range(10):
+      print i
+      if i == 4:
+        self.snapshot(target=state_handler,
+                      exit_vr=False, exit_vm=False)
+\end{verbatim}
+\normalsize
+\caption{Internal State Management with State Handler}
+\label{ex:internalstatehandler}
+\end{listing}
+%\end{figure}
+
+The \verb+snapshot()+ interface can be extended by supplying a {\it state handler} function object to the \verb+target+ parameter rather than a string.  In this way, the application can specify precisely what should be done with the snapshot state.  For example, the application may choose to put the state in a specific location on disk, on a network file system, or send the state to a network service.  The handler can also be used to create replicas or to store the state in memory. Listing~\ref{ex:internalstatehandler} shows how to supply a state handler function.
+
+\subsection{External Interface}
+\label{sec:ExternalInterface}
+
+River applications can also be manipulated through an external
+interface. This interface allows utility programs to pause running VRs,
+capture VR state, and restore VR state to available VMs. This interface
+can be used to implement full distributed program checkpointing and
+migration. We provide a simple state controller utility that performs a
+straightforward coordinated checkpoint~\cite{Coti:2006:Checkpointing}.
+The utility works by first locating all the VRs associated with a
+running application. It then issues pause commands to each VM running an
+application VR. Once paused, a message balancing algorithm is used to
+ensure all in-flight messages reach their destination VR queues. Note
+that the in-flight messages are not processed once received. They are
+now considered part of the VR state. Once all messages are balanced, the
+VR state on each VM can be captured.  The resulting state can be migrated to idle VMs or collected and written to disk. The VR state can be written in a distributed manner to the local VM file systems or the state of each VR can be collected and combined onto the file system that is associated with the state controller utility.
+
+%\begin{figure}[htb]
+\begin{listing}
+\scriptsize
+\begin{verbatim}
+
+
+import cPickle as Pickle
+from river.core.state import StateClientVR
+
+class save(StateClientVR):
+  def main(self):
+    vmlist = self.discover(status='*')
+    self.pause(vmlist)
+    self.balance(vmlist)
+    vrcontainer_list = self.getvrs(vmlist)
+    vrfile = open(filename, 'w')
+    pickle.dump(vrcontainer_list, vrfile)
+    vrfile.close()
+\end{verbatim}
+\normalsize
+\caption{Simple Usage of External State Management}
+\label{ex:externalstate}
+\end{listing}
+%\end{figure}
+
+The external state management interface is provided through a special \verb+StateClientVR+ class.  So, state management utilities are also VRs that are given special methods for finding running VMs and VRs and manipulating their state.  Listing~\ref{ex:externalstate} shows a minimal distributed snapshot application using the \verb+StateClientVR+ interface.  A more robust implementation would do more error checking and would not assume that all discovered VMs are a part of the same distributed application.  It is also possible to have each VM save the snapshot state locally rather than collect the state onto a single machine.  This approach can speed up checkpoints by using local disks and eliminate the transfer of state over the network.
+
+\subsection{Extensions}
+
+Both the internal and external state management interfaces are simple but
+very flexible.  They can be used to build programming model and
+application-specific checkpointing and redundancy.  In addition to these
+interfaces, it is also possible to have fine-grain control over state
+capture on an object-by-object basis.  Because we utilize the Python
+\verb+pickle+ module, programmers can write classes that can determine the state that should be saved for each object using the \verb+getstate()+ and \verb+setstate()+ instance methods.  The \verb+getstate()+ method is called implicitly when an object is being pickled, and likewise, the \verb+setstate()+ method is called implicitly when the serialized snapshot is being unpickled.
+
+%\begin{figure}[htb]
+\begin{listing}
+\scriptsize
+\begin{verbatim}
+
+
+class LookupTable(object):
+    def __init__(self, size):
+        self.size = size
+        self.fill()
+
+    def fill(self):
+        self.table = range(self.size)
+
+    def lookup(self, i):
+        return self.table[i]
+        
+    def __getstate__(self):
+        d = {}
+        d['size'] = self.size
+        return d
+        
+    def __setstate__(self, d):
+        self.size = d['size']
+        self.fill()
+\end{verbatim}
+\normalsize
+\caption{Object-specific State Capture}
+\label{ex:objectstatecapture}
+\end{listing}
+%\end{figure}
+
+Listing~\ref{ex:objectstatecapture} shows a simplified \verb+LookupTable+ class that can eliminate state during capture, then recompute the object state when the VR is restored.  The \verb+getstate()+ method simply creates a temporary dictionary with the state to be saved during a snapshot.  In this case we need the \verb+size+ attribute.  The \verb+setstate()+ method restores \verb+size+ and recomputes the table with the \verb+fill()+ method.  This interface can be used to support memory exclusion~\cite{Plank:1999:CheckpointExclusion}.
+
+\subsection{Discussion}
+
+The River state management interface has proven effective at creating arbitrary snapshots of serial and distributed Python programs.  However, the interface currently has two limitations.  First, there is no strict containment of VR state as application VRs and the River run-time system exist in the same execution space.  So, programmers must be sure not to ``pollute'' the VR instance with references to internal River objects.  Similarly, only state reachable via the VR instance will be in the snapshot.  Therefore, global data will not be included unless explicit references from the VR object or descendent objects are made to global objects.  So far, this requirement has not proven to be a significant burden.
+
+The second and more significant limitation concerns I/O modules.  Just as in most other checkpoint systems, open I/O descriptors are troublesome.  This is because open I/O descriptors involve state that exists in the OS and may involve state beyond the local machine in the case of a socket connection.  Most checkpointing systems require applications to reestablish all I/O descriptors once a snapshot has been restored.  We currently take the same approach.  However, we are investigating providing wrapper classes for I/O modules so that certain I/O descriptors can be reestablished in an automated fashion.

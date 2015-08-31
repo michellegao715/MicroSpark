@@ -1,0 +1,25 @@
+\begin{abstract}
+
+We present a novel state management mechanism that can be used to
+capture the complete execution state of distributed Python applications.
+This mechanism can serve as the foundation for a variety of
+dependability strategies including checkpointing, replication, and
+migration. Python is increasingly used for rapid prototyping parallel
+programs and, in some cases, used for high-performance application
+development using libraries such as NumPy. Building on Stackless Python
+and the River parallel and distributed programming environment, we have
+developed mechanisms for state capture at the language level. Our
+approach allows for migration and checkpointing of applications in
+heterogeneous environments. In addition, we allow for preemptive state
+capture so that programmers need not introduce explicit snapshot
+requests. Our mechanism can be extended to support application or
+domain-specific state capture. To our knowledge, this is the first
+general checkpointing scheme for Python. We describe our system, the
+implementation, and give some initial performance figures.
+
+\end{abstract}
+
+%\vspace{0.10in}
+%\noindent
+%{\bf Keywords:} Python, distributed programming, state management, %checkpointing, migration
+

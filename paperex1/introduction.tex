@@ -1,0 +1,68 @@
+\section{Introduction}
+\label{sec:Introduction}
+
+The future of dependable distributed computing will rely on better
+integration of fault tolerance mechanisms at all levels of computer
+systems. The programming language run-time system is a natural
+location for dependability support. In the long-term, new programming
+language semantics with replication and failure handling will help
+programmers write fault-tolerant software. However, much more research,
+development, and experimentation will be required before new languages
+are adopted.  Our belief is that using a high productivity language such as Python~\cite{Python} can allow researchers to explore a larger design space when compared to conventional statically-typed languages.
+
+We have developed the \emph{River} framework to facilitate the
+development of reliable distributed Python programs and the rapid
+prototyping of reliable parallel programming systems. River is
+implemented entirely in Python and is based on a few fundamental
+concepts that enable the execution of code on multiple virtual machines
+and provide a flexible mechanism for communication. These concepts are
+supported by the River run-time system, which manages automatic
+discovery, connection management, naming, process creation, and message
+passing. The simplicity and elegance of the River core combined with
+Python's dynamic typing and concise notation make it easy to rapidly
+develop distributed applications and a variety of parallel run-time
+systems for new programming models. 
+
+%River introduces a novel dynamically
+%typed message passing mechanism, called {\it super flexible messaging}
+%that makes it easy to send arbitrary data as attribute-value pairs and
+%can selectively receive based on matching attribute name and subsets of
+%attribute values~\cite{Fedosov:2007:SFM}. This powerful mechanism
+%eliminates the need to define a fixed packet structure or specify fixed
+%remote interfaces.
+
+% State management
+
+To support different forms of fault tolerance based on state
+redundancy~\cite{Gartner:1999:FT} we have developed an integrated state
+management mechanism within River. The base mechanism supports
+system-level and programmer directed checkpointing for arbitrary River
+applications. Thus application-level modifications are not required, but
+an explicit interface is provided if the application desires to control
+the replication strategy. The base mechanism can be extended to support
+various forms of state management, such as memory
+exclusion~\cite{Plank:1999:CheckpointExclusion}, incremental
+checkpointing~\cite{Plank:1995:Libckpt} or diskless
+checkpointing~\cite{Plank:1998:CheckpointDiskless,Chen:2005:CheckpointCoding}.
+The River state management facility can be used to support
+checkpointing, load balancing, and whole or partial program migration in
+clusters and grids. We have implemented our state management support on
+top of Stackless
+Python~\cite{Tismer:2000:StacklessPython,Stackless:2007}. We use
+Stackless Python in an unconventional manner and designed a novel
+system-call mechanism to ensure the separation of process state from the
+rest of the River system.
+
+% This separation is needed to fully detach
+%River process state so that a Stackless tasklet can be pickled.
+
+% GDB: Outline
+
+This paper describes the design and implementation of the state management mechanism we have built in the River programming environment for distributed Python programs.
+The rest of this paper is organized as follows.
+Section~\ref{sec:Background} provides brief overviews of Python, Stackless Python, and River. 
+Section~\ref{sec:Interface} describes the basic River interfaces for state management and some usage scenarios.
+Section~\ref{sec:Implementation} details the implementation.
+Section~\ref{sec:Experiments} presents the results of some basic experimentation of checkpointing Python applications.
+Section~\ref{sec:Conclusions} makes some concluding remarks and gives
+directions for future work.

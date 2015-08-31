@@ -1,0 +1,20 @@
+ranks = self.createRank('test_pagerank')
+self.textFile('test_pagerank').flatMap(lambda line: {line.split()[0]: line.split()[1]}).groupByKey().persist() 
+for i in range(5):                      
+	result = self.doPageRank(ranks)
+	for k in ranks:
+		ranks[k][1] = 0
+	for k in result:
+		ranks[k[0]][1] += k[1][1]
+print ranks
+
+-----------------------------------
+
+self.textFile('myfile').flatMap(lambda line: line.split()).map(lambda word: (word.strip(',.\"\''), 1)).reduceByKey(lambda a, b: a + b).saveAsTextFile('result')
+
+------------------------------------
+
+self.textFile('test_log').filter(lambda line:line.startswith('ERROR')).persist()
+self.count()
+self.collect()
+

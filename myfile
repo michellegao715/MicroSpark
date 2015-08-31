@@ -1,0 +1,4 @@
+We start by defining a persistent RDD called points as the result of a map transformation on a text file that parses each line of text into a Point object. We then repeatedly
+run map and reduce on points to compute the gradient at each step by summing a function of the current w. Keeping points in memory across iterations can yield a 20× speedup, as we show in Section 6.1.
+We start by defining a persistent RDD called points as the result of a map transformation on a text file that parses each line of text into a Point object. We then repeatedly
+run map and reduce on points to compute the gradient at each step by summing a function of the current w. Keeping points in memory across iterations can yield a 20× speedup, as we show in Section 6.1.

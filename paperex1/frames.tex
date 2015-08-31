@@ -1,0 +1,120 @@
+%
+% Frame Environments (all of these require fancybox.sty)
+%
+
+%
+% Variables used for the frame environments
+%
+\newlength{\mylength}
+
+
+% fminipage
+%
+% Frame a minipage (do not use for framing verbatim text, use
+% Framedverb below)
+%
+% Usage: \begin{fminipage}[...]{...}  ... \end{fminipage}
+
+\newenvironment{fminipage}%
+  {\begin{Sbox}\begin{minipage}}%
+  {\end{minipage}\end{Sbox}\fbox{\TheSbox}}
+
+
+% pminipage
+%
+% Frame a minipage whose width is \textwidth
+%
+% Usage: \begin{pminipage}  ... \end{pminipage}
+%
+% Note: the apparent redundancy below is needed.
+
+\newenvironment{ipminipage}%
+  {\begin{minipage}{\mylength}}%
+  {\end{minipage}}%
+
+\newenvironment{pminipage}%
+  {\setlength{\fboxsep}{0.4cm}%
+    \begin{Sbox}%
+    \setlength{\mylength}{\textwidth}%
+    \addtolength{\mylength}{-2\fboxsep}%
+    \addtolength{\mylength}{-2\fboxrule}%
+    \begin{minipage}{\mylength}%
+    \begin{ipminipage}}%
+  {\end{ipminipage}\end{minipage}\end{Sbox}%
+   \fbox{\TheSbox}}%
+
+
+
+% FramedVerb and FramedVerbSSP 
+%
+% Frame verbatim text for use with figures (has implicit page width,
+% in case we change the margins).  FramedVerbSSP uses single spacing.
+%
+% Usage:
+%   \begin{FramedVerb}
+%   ... verbatim text here ...
+%   \end{FramedVerb}
+
+
+
+\newenvironment{FramedVerb}%
+  {\VerbatimEnvironment%
+    \setlength{\fboxsep}{0.2cm}%
+    \begin{Sbox}%
+    %\setlength{\mylength}{\textwidth}%
+    \setlength{\mylength}{3.4in}%
+    \addtolength{\mylength}{-2\fboxsep}%
+    \addtolength{\mylength}{-2\fboxrule}%
+    \begin{minipage}{\mylength}\begin{Verbatim}}%
+  {\end{Verbatim}\end{minipage}\end{Sbox}%
+    \fbox{\TheSbox}}%
+
+\newenvironment{FramedVerbSSP}%
+  {\VerbatimEnvironment%
+    \setlength{\fboxsep}{0.4cm}%
+    \begin{Sbox}%
+    \setlength{\mylength}{\textwidth}%
+    \addtolength{\mylength}{-2\fboxsep}%
+    \addtolength{\mylength}{-2\fboxrule}%
+    \ssp\begin{minipage}{\mylength}\begin{Verbatim}}%
+  {\end{Verbatim}\end{minipage}\dsp\end{Sbox}%
+    \fbox{\TheSbox}}%
+
+
+% FramedVerbInline and FramedVerbInlineSSP
+%
+% Frame verbatim text inline with other text (has implicit page width,
+% in case we change the margins).  This environment adds space above
+% and below the frame, and apply \noindent to the frame.
+% FramedVerbInlineSSP uses single spacing.
+%
+% Usage:
+%   \begin{FramedVerbInline}
+%   ... verbatim text here ...
+%   \end{FramedVerbInline}
+
+\newenvironment{FramedVerbInline}%
+  {\VerbatimEnvironment%
+    \setlength{\fboxsep}{0.4cm}%
+    \begin{Sbox}%
+    \setlength{\mylength}{\textwidth}%
+    \addtolength{\mylength}{-2\fboxsep}%
+    \addtolength{\mylength}{-2\fboxrule}%
+    \begin{minipage}{\mylength}\begin{Verbatim}}%
+  {\end{Verbatim}\end{minipage}\end{Sbox}%
+    \vspace{0.2in}\noindent%
+    \fbox{\TheSbox}\vspace{0.2in}}%
+
+\newenvironment{FramedVerbInlineSSP}%
+  {\VerbatimEnvironment%
+    \setlength{\fboxsep}{0.4cm}%
+    \begin{Sbox}%
+    \setlength{\mylength}{\textwidth}%
+    \addtolength{\mylength}{-2\fboxsep}%
+    \addtolength{\mylength}{-2\fboxrule}%
+    \ssp\begin{minipage}{\mylength}\begin{Verbatim}}%
+  {\end{Verbatim}\end{minipage}\dsp\end{Sbox}%
+    \vspace{0.2in}\noindent%
+    \fbox{\TheSbox}\vspace{0.2in}}%
+
+
